@@ -143,17 +143,37 @@ LANGGRAPH_DB_PATH=./data/checkpoints.sqlite
 
 ### Opção A - Interface Web (Streamlit) - RECOMENDADO
 
+Execute os comandos a partir da raiz de `projeto_agentes/`, com o ambiente virtual ativado:
+
 ```bash
-streamlit run src/ui/app.py
+source .venv/bin/activate
+PYTHONPATH=. streamlit run src/ui/app.py
 ```
 
-Ou use o script:
+`PYTHONPATH=.` permite que a aplicação encontre o pacote `src` ao iniciar pelo Streamlit.
+No Windows, use o comando equivalente `set PYTHONPATH=.` antes de iniciar o Streamlit.
+
+Como alternativa, use o script:
 
 ```bash
 ./run_ui.sh
 ```
 
 A interface estará disponível em: `http://localhost:8501`
+
+### Proteções para commits e envio ao GitHub
+
+Os hooks do repositório bloqueiam commits na branch `main`, tentativas de enviar `main` diretamente ao remoto, arquivos `.env` (exceto `.env.example`) e conteúdo que pareça conter chaves de API ou outras credenciais. O hook de commit verifica o staging; o hook de push também verifica os arquivos dos commits que serão enviados, inclusive o histórico novo.
+
+Ative os hooks em cada clone:
+
+```bash
+./scripts/install_git_hooks.sh
+```
+
+Antes de commitar, crie e use uma branch de trabalho, por exemplo `feature/minha-alteracao`. Confira os arquivos selecionados com `git status` e faça o commit nessa branch. Os hooks analisam o conteúdo, não apenas os nomes dos arquivos.
+
+Essas verificações locais são uma camada de proteção: hooks podem ser ignorados com opções como `--no-verify` e não substituem regras de proteção configuradas no GitHub. Para proteger o remoto, configure uma ruleset/branch protection para `main` exigindo pull request e habilite secret scanning/push protection quando disponível. Se uma chave real já tiver sido compartilhada, revogue-a no provedor e gere outra; removê-la do commit atual não invalida a chave exposta.
 
 ### Opção B - Linha de Comando
 
@@ -310,7 +330,12 @@ Instale FFmpeg no sistema (veja seção 1).
 
 ### Erro de importação de módulos da UI
 
-Certifique-se de estar executando a partir da raiz do projeto `projeto_agentes/` e que o ambiente virtual está ativado.
+Execute a partir da raiz do projeto `projeto_agentes/`, ative o ambiente virtual e defina `PYTHONPATH=.`:
+
+```bash
+source .venv/bin/activate
+PYTHONPATH=. streamlit run src/ui/app.py
+```
 
 ### Chaves de API não configuradas
 
@@ -327,8 +352,8 @@ source .venv/bin/activate
 # Instalar dependências
 pip install -r requirements.txt
 
-# Executar interface
-streamlit run src/ui/app.py
+# Executar interface (a partir da raiz do projeto)
+PYTHONPATH=. streamlit run src/ui/app.py
 
 # Executar via linha de comando
 python src/main.py

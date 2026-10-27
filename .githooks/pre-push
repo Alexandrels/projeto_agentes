@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+updates="$(cat)"
+
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+    [[ -n "${local_ref:-}" ]] || continue
+    if [[ "$local_ref" == "refs/heads/main" || "$remote_ref" == "refs/heads/main" ]]; then
+        printf 'Push bloqueado: atualizações diretas da branch main não são permitidas. Use uma branch feature/ e um pull request.\n' >&2
+        exit 1
+    fi
+done <<< "$updates"
+
+repo_root="$(git rev-parse --show-toplevel)"
+printf '%s\n' "$updates" | python3 "$repo_root/scripts/check_pushed_commits.py"

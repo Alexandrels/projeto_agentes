@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+branch="$(git symbolic-ref --quiet --short HEAD || true)"
+if [[ -z "$branch" ]]; then
+    printf 'Commit bloqueado: HEAD não aponta para uma branch. Crie uma branch antes de commitar.\n' >&2
+    exit 1
+fi
+
+if [[ "$branch" == "main" ]]; then
+    printf 'Commit bloqueado: commits diretos na branch main não são permitidos. Crie/use uma branch feature/.\n' >&2
+    exit 1
+fi
+
+repo_root="$(git rev-parse --show-toplevel)"
+python3 "$repo_root/scripts/check_staged_secrets.py"
